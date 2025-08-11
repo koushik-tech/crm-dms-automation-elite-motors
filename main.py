@@ -55,7 +55,7 @@ if __name__ == '__main__':
         vehicle_history_tab.click()
 
         # Read Excel file
-        df = pd.read_excel("Data Bank June 02062025.xlsx")  # Reads entire sheet by default
+        df = pd.read_excel("Sample_Data_Bank_June_2025.xlsx")  # Reads entire sheet by default
 
         # Select only two columns (replace with your actual column names)
         df = df[['Chassis No', 'Registration No']]
@@ -71,14 +71,14 @@ if __name__ == '__main__':
             print(type(chasis_no))
             # driver.find_element(By.NAME, "s_1_1_301_0").send_keys("WB24AW9959")
             # driver.find_element(By.NAME, "s_1_1_298_0").send_keys("MAT403725ENC02141") # search by Chassis No.
-            print("Before vehicle click")
+            print("Before search click")
+            time.sleep(20)
             button = WebDriverWait(driver, 25).until(
                 EC.element_to_be_clickable((By.ID, "s_1_1_346_0_Ctrl"))
             )
             button.click()
-
-            print("After vehicle click")
-            time.sleep(20)
+            print("After search click")
+            time.sleep(30)
             driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
 
             # 2. Wait for 'Go' button and click
