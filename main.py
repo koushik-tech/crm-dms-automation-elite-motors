@@ -107,53 +107,83 @@ if __name__ == '__main__':
        # Find all data rows with class jqgrow inside the tbody
        data_rows = table_body.find_elements(By.CSS_SELECTOR, "tr.jqgrow")
 
+       contact_headers = ['Customer Rel. No.', 'M/M', 'Last Name', 'First Name', 'Asset Relationship', 'Driving License',
+                  'Expiry Date', 'RC Book Check', 'Company/Account', 'Site', 'Contact Address', 'City', 'State',
+                  'Phone (R)', 'Phone(O)', 'Cell Phone No.', 'Email Address', 'Final Validation', 'Created By',
+                  'Created Date', 'Customer Segment', 'Primary', 'Verification Status', 'Verified Date',
+                  'Invoice Created Date']
 
        # If you want the last row:
-       if data_rows:
-           last_row = data_rows[-1]
-           # Optionally scroll into view
-           driver.execute_script("arguments[0].scrollIntoView(true);", last_row)
+       # if data_rows:
+       #     last_row = data_rows[-1]
+       #     # Optionally scroll into view
+       #     driver.execute_script("arguments[0].scrollIntoView(true);", last_row)
+       #
+       #     # For example, to click the last row somewhere (e.g., on first cell or the row itself)
+       #     last_row.click()  # or last_row.find_element(...).click()
+       #
+       #     # Get headers
+       #     table = driver.find_element(By.ID, "s_2_l")
+       #     time.sleep(20)
+       #     # header_row = tablee.find_element(By.TAG_NAME, "thead").find_element(By.TAG_NAME, "tr")
+       #
+       #     headers = ['Customer Rel. No.','M/M','Last Name','First Name','Asset Relationship','Driving License',
+       #                'Expiry Date','RC Book Check','Company/Account','Site','Contact Address','City','State',
+       #                'Phone (R)','Phone(O)','Cell Phone No.','Email Address','Final Validation','Created By',
+       #                'Created Date','Customer Segment','Primary','Verification Status','Verified Date','Invoice Created Date']
+       #     # for th in header_row.find_elements(By.TAG_NAME, "th"):
+       #     #     if th.is_displayed():
+       #     #         header_text = th.text.strip()
+       #     #         if header_text:
+       #     #             headers.append(header_text)
+       #
+       #     # Find all cell elements (<td>) inside the last row
+       #     cells = last_row.find_elements(By.TAG_NAME, "td")
+       #     # Extract the text from each cell
+       #     cell_texts = [cell.text.strip() for cell in cells]
+       #
+       #     print("Last row clicked or selected.")
+       #     # for i in range(min(len(headers), len(cell_texts))):
+       #     #     print(f"{headers[i]}: {cell_texts[i]}")
+       #     # for idx, text in enumerate(cell_texts, start=0):
+       #     #     print(f"Cell {idx}: {text}")
+       #
+       #     for idx, cell in enumerate(cells):
+       #         text1 = cell.text.strip()
+       #         text2 = cell.get_attribute('textContent').strip()
+       #         print(f"Cell {idx} - .text: '{text1}', textContent: '{text2}'")
+       #
+       #     # first_name_cell = last_row.find_element(By.ID, "2_s_2_l_First_Name")
+       #     # print("First Name:", first_name_cell.text.strip())
+       # else:
+       #     print("No rows found in the grid.")
 
-           # For example, to click the last row somewhere (e.g., on first cell or the row itself)
-           last_row.click()  # or last_row.find_element(...).click()
+       sale_dt_element = driver.find_element(By.XPATH,
+                           '//input[contains(@class, "siebui-ctrl-date") and @aria-label="Original Sale Date"]')
+       # Read the value attribute (this gives input’s content)
+       sale_dt_value = sale_dt_element.get_attribute("value")
+       print(f"Original Sale Date value: '{sale_dt_value}'")
 
-           # Get headers
-           table = driver.find_element(By.ID, "s_2_l")
-           time.sleep(20)
-           # header_row = tablee.find_element(By.TAG_NAME, "thead").find_element(By.TAG_NAME, "tr")
+       chassis_no_element = driver.find_element(By.XPATH,
+                           '//input[contains(@class, "siebui-ctrl-input") and @aria-label="Chassis No"]')
+       # Read the value attribute (this gives input’s content)
+       chassis_no_value = chassis_no_element.get_attribute("value")
+       print(f"Chassis No value: '{chassis_no_value}'")
 
-           headers = ['Customer Rel. No.','M/M','Last Name','First Name','Asset Relationship','Driving License',
-                      'Expiry Date','RC Book Check','Company/Account','Site','Contact Address','City','State',
-                      'Phone (R)','Phone(O)','Cell Phone No.','Email Address','Final Validation','Created By',
-                      'Created Date','Customer Segment','Primary','Verification Status','Verified Date','Invoice Created Date']
-           # for th in header_row.find_elements(By.TAG_NAME, "th"):
-           #     if th.is_displayed():
-           #         header_text = th.text.strip()
-           #         if header_text:
-           #             headers.append(header_text)
+       last_serv_dt_element = driver.find_element(By.XPATH,
+                           '//input[contains(@class, "siebui-ctrl-date") and @aria-label="Last Service Date"]')
+       # Read the value attribute (this gives input’s content)
+       last_serv_dt_value = last_serv_dt_element.get_attribute("value")
+       print(f"Last Service Date value: '{last_serv_dt_value}'")
 
-           # Find all cell elements (<td>) inside the last row
-           cells = last_row.find_elements(By.TAG_NAME, "td")
-           # Extract the text from each cell
-           cell_texts = [cell.text.strip() for cell in cells]
-
-           print("Last row clicked or selected.")
-           # for i in range(min(len(headers), len(cell_texts))):
-           #     print(f"{headers[i]}: {cell_texts[i]}")
-           # for idx, text in enumerate(cell_texts, start=0):
-           #     print(f"Cell {idx}: {text}")
-
-           for idx, cell in enumerate(cells):
-               text1 = cell.text.strip()
-               text2 = cell.get_attribute('textContent').strip()
-               print(f"Cell {idx} - .text: '{text1}', textContent: '{text2}'")
-
-           # first_name_cell = last_row.find_element(By.ID, "2_s_2_l_First_Name")
-           # print("First Name:", first_name_cell.text.strip())
-       else:
-           print("No rows found in the grid.")
+       next_serv_dt_element = driver.find_element(By.XPATH,
+                           '//input[contains(@class, "siebui-ctrl-date") and @aria-label="Next Service Date"]')
+       # Read the value attribute (this gives input’s content)
+       next_serv_dt_value = next_serv_dt_element.get_attribute("value")
+       print(f"Next Service Date value: '{next_serv_dt_value}'")
 
        # traverse through all rows
+       rows_data = []
        for row_index, row in enumerate(data_rows, start=1):
            cells = row.find_elements(By.TAG_NAME, "td")
            cell_texts = [cell.text.strip() for cell in cells]
@@ -164,13 +194,174 @@ if __name__ == '__main__':
            offset = 1 if has_checkbox else 0
            offset = 2
            print(f"Row {row_index}:")
-           for i, header in enumerate(headers):
+           row_dict = {}
+           for i, header in enumerate(contact_headers):
                cell_idx = i + offset
                if cell_idx < len(cell_texts):
                    print(f"  {header}: {cell_texts[cell_idx]}")
+                   row_dict[header] = cell_texts[cell_idx]
                else:
                    print(f"  {header}: <no data>")
+                   row_dict[header] = None  # or '', depending on preference
            print("-" * 40)
+           rows_data.append(row_dict)
+
+           # Now find the single row where 'Primary' == 'Y'
+       primary_row = None
+       for row in rows_data:
+           if row.get('Primary', '').upper() == 'Y':
+               primary_row = row
+               break  # remove break if multiple matches needed
+
+       if primary_row:
+           print("Row where 'Primary' is 'Y':")
+           for k, v in primary_row.items():
+               print(f"{k}: {v}")
+
+            # Convert the single row dict to a DataFrame with one row
+           df = pd.DataFrame([primary_row])
+
+           # Save to Excel file - specify your file name and path
+           excel_file_path = "primary_row_data.xlsx"
+           df.to_excel(excel_file_path, index=False)
+
+           print(f"DataFrame saved to '{excel_file_path}'")
+       else:
+           print("No row found where 'Primary' is 'Y'.")
+
+       # SERVICE HISTORY
+
+       print("Before Service History click")
+
+       time.sleep(30)
+       serv_hist_tab = WebDriverWait(driver, 20).until(
+           EC.element_to_be_clickable((By.XPATH, "//a[@data-tabindex='tabScreen5' and contains(., 'Service History')]"))
+       )
+       driver.execute_script("arguments[0].scrollIntoView(true);", serv_hist_tab)
+       time.sleep(10)
+       try:
+           serv_hist_tab.click()
+       except:
+           driver.execute_script("arguments[0].click();", serv_hist_tab)
+
+       time.sleep(20)
+       # # Locate the table by its ID
+       # table = driver.find_element(By.ID, "s_2_l")
+       # print("1....")
+       # # Get all rows inside the <tbody>
+       # data_rows = table.find_elements(By.CSS_SELECTOR, "tbody tr[role='row']")
+       # print("2....")
+       # if data_rows:
+       #     first_row = data_rows[0]
+       #     print("3....")
+       #
+       #
+       #     # Find all cell elements (<td>) inside the last row
+       #     cells = first_row .find_elements(By.TAG_NAME, "td")
+       #     # Extract the text from each cell
+       #     cell_texts = [cell.text.strip() for cell in cells]
+       #
+       #     print("First row clicked or selected.")
+       #     # for i in range(min(len(headers), len(cell_texts))):
+       #     #     print(f"{headers[i]}: {cell_texts[i]}")
+       #     # for idx, text in enumerate(cell_texts, start=0):
+       #     #     print(f"Cell {idx}: {text}")
+       #
+       #     for idx, cell in enumerate(cells):
+       #         text1 = cell.text.strip()
+       #         text2 = cell.get_attribute('textContent').strip()
+       #         print(f"Cell {idx} - .text: '{text1}', textContent: '{text2}'")
+
+           # Scroll into view to ensure it's visible before acting on it
+           # driver.execute_script("arguments[0].scrollIntoView(true);", first_row)
+
+           # Option 1: Click the entire first row
+           # first_row.click()
+
+       print("After Service History click")
+       time.sleep(20)
+
+       table_body = WebDriverWait(driver, 20).until(
+           EC.presence_of_element_located((By.CSS_SELECTOR, "#s_2_l tbody"))
+       )
+
+       # Find all data rows with class jqgrow inside the tbody
+       srv_hist_data_rows = table_body.find_elements(By.CSS_SELECTOR, "tr.jqgrow")
+
+       time.sleep(20)
+
+       # traverse through all rows
+       srv_hist_rows_data = []
+       srv_hist_headers = ['SH #','Chassis No.','Registration No.','Account','SR #','Service Date/Time','Serviced At Dealer',
+                           'Odometer Reading','Hours','SR Type','Summary','Survey Customer','Revisit','Service Request',
+                           'Job Card Open Date','Customer Segment','Contact Full Name']
+       for row_index, row in enumerate(srv_hist_data_rows, start=1):
+           cells = row.find_elements(By.TAG_NAME, "td")
+           cell_texts = [cell.text.strip() for cell in cells]
+
+           # Detect if first cell is checkbox — check for input element of type checkbox
+           first_cell_html = cells[0].get_attribute('innerHTML').lower()
+           has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
+           offset = 1 if has_checkbox else 0
+           offset = 2
+           print(f"Row {row_index}:")
+           srv_hist_row_dict = {}
+           for i, header in enumerate(srv_hist_headers):
+               cell_idx = i + offset
+               if cell_idx < len(cell_texts):
+                   print(f"  {header}: {cell_texts[cell_idx]}")
+                   srv_hist_row_dict[header] = cell_texts[cell_idx]
+               else:
+                   print(f"  {header}: <no data>")
+                   srv_hist_row_dict[header] = None  # or '', depending on preference
+           print("-" * 40)
+           srv_hist_rows_data.append(srv_hist_row_dict)
+
+       print(srv_hist_rows_data)
+       # If you want the last row:
+       # if data_rows:
+       #     first_row  = data_rows[0]
+       #     # Optionally scroll into view
+       #     driver.execute_script("arguments[0].scrollIntoView(true);", first_row )
+       #
+       #     # For example, to click the last row somewhere (e.g., on first cell or the row itself)
+       #     first_row .click()  # or last_row.find_element(...).click()
+       #
+       #     # Get headers
+       #     table = driver.find_element(By.ID, "s_2_l")
+       #     time.sleep(20)
+       #     # header_row = tablee.find_element(By.TAG_NAME, "thead").find_element(By.TAG_NAME, "tr")
+       #
+       #     headers = ['Customer Rel. No.','M/M','Last Name','First Name','Asset Relationship','Driving License',
+       #                'Expiry Date','RC Book Check','Company/Account','Site','Contact Address','City','State',
+       #                'Phone (R)','Phone(O)','Cell Phone No.','Email Address','Final Validation','Created By',
+       #                'Created Date','Customer Segment','Primary','Verification Status','Verified Date','Invoice Created Date']
+       #     # for th in header_row.find_elements(By.TAG_NAME, "th"):
+       #     #     if th.is_displayed():
+       #     #         header_text = th.text.strip()
+       #     #         if header_text:
+       #     #             headers.append(header_text)
+       #
+       #     # Find all cell elements (<td>) inside the last row
+       #     cells = first_row .find_elements(By.TAG_NAME, "td")
+       #     # Extract the text from each cell
+       #     cell_texts = [cell.text.strip() for cell in cells]
+       #
+       #     print("First row clicked or selected.")
+       #     # for i in range(min(len(headers), len(cell_texts))):
+       #     #     print(f"{headers[i]}: {cell_texts[i]}")
+       #     # for idx, text in enumerate(cell_texts, start=0):
+       #     #     print(f"Cell {idx}: {text}")
+       #
+       #     for idx, cell in enumerate(cells):
+       #         text1 = cell.text.strip()
+       #         text2 = cell.get_attribute('textContent').strip()
+       #         print(f"Cell {idx} - .text: '{text1}', textContent: '{text2}'")
+       #
+       #     # first_name_cell = last_row.find_element(By.ID, "2_s_2_l_First_Name")
+       #     # print("First Name:", first_name_cell.text.strip())
+       # else:
+       #     print("No rows found in the grid.")
 
        # # Get all cells from the first row
        # first_row_cells = driver.find_elements(By.XPATH, "//td[starts-with(@id, '1_s_2_l_')]")

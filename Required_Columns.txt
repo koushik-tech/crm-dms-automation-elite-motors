@@ -1,2 +1,24 @@
 Contact - Full Grid (Primary = Y) , Original Sale Date, Chassis No:, Last Service Date, Next Service Date:,
 Service History - Grid (Top Row)
+
+sale_dt_element = driver.find_element(By.NAME, "s_4_1_266_0")
+# Read the value attribute (this gives input’s content)
+sale_dt_value = sale_dt_element.get_attribute("value")
+print(f"Original Sale Date value: '{sale_dt_value}'")
+
+chassis_no_element = driver.find_element(By.NAME, "s_4_1_278_0")
+# Read the value attribute (this gives input’s content)
+chassis_no_value = chassis_no_element.get_attribute("value")
+print(f"Chassis No value: '{chassis_no_value}'")
+
+last_serv_dt_element = driver.find_element(By.NAME, "s_4_1_210_0")
+# Read the value attribute (this gives input’s content)
+last_serv_dt_value = last_serv_dt_element.get_attribute("value")
+print(f"Last Service Date value: '{last_serv_dt_value}'")
+
+next_serv_dt_element = driver.find_element(By.NAME, "s_4_1_93_0")
+# Read the value attribute (this gives input’s content)
+next_serv_dt_value = next_serv_dt_element.get_attribute("value")
+print(f"Next Service Date value: '{next_serv_dt_value}'")
+
+
