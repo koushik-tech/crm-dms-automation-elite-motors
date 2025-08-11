@@ -53,14 +53,7 @@ if __name__ == '__main__':
         # Option A: If it's a top menu link
         vehicle_history_tab = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Vehicles")))
         vehicle_history_tab.click()
-        print("Before vehicle click")
-        button = WebDriverWait(driver, 25).until(
-            EC.element_to_be_clickable((By.ID, "s_1_1_346_0_Ctrl"))
-        )
-        button.click()
 
-        print("After vehicle click")
-        time.sleep(20)
         # Read Excel file
         df = pd.read_excel("Data Bank June 02062025.xlsx")  # Reads entire sheet by default
 
@@ -78,6 +71,14 @@ if __name__ == '__main__':
             print(type(chasis_no))
             # driver.find_element(By.NAME, "s_1_1_301_0").send_keys("WB24AW9959")
             # driver.find_element(By.NAME, "s_1_1_298_0").send_keys("MAT403725ENC02141") # search by Chassis No.
+            print("Before vehicle click")
+            button = WebDriverWait(driver, 25).until(
+                EC.element_to_be_clickable((By.ID, "s_1_1_346_0_Ctrl"))
+            )
+            button.click()
+
+            print("After vehicle click")
+            time.sleep(20)
             driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
 
             # 2. Wait for 'Go' button and click
