@@ -72,11 +72,18 @@ if __name__ == '__main__':
             # driver.find_element(By.NAME, "s_1_1_301_0").send_keys("WB24AW9959")
             # driver.find_element(By.NAME, "s_1_1_298_0").send_keys("MAT403725ENC02141") # search by Chassis No.
             print("Before search click")
+            # driver.execute_script("window.scrollTo(0, 0);")
             time.sleep(20)
-            button = WebDriverWait(driver, 25).until(
-                EC.element_to_be_clickable((By.ID, "s_1_1_346_0_Ctrl"))
-            )
-            button.click()
+            # search_button = WebDriverWait(driver, 25).until(
+            #     EC.element_to_be_clickable((By.ID, "s_1_1_346_0_Ctrl"))
+            # )
+            # button.click()
+            search_button = driver.find_element(By.ID, "s_1_1_346_0_Ctrl")  # Replace with your actual locator
+            # Scroll the element into view
+            driver.execute_script("arguments[0].scrollIntoView(true);", search_button)
+            # Optionally add a small wait to ensure scrolling completed
+            time.sleep(0.5)
+            search_button.click()
             print("After search click")
             time.sleep(30)
             driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
