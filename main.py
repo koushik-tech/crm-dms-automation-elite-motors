@@ -12,7 +12,7 @@ def print_hi(name):
     print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
 
 
-def load_credentials(filepath="credentials.json"):
+def load_credentials(filepath="process_config.json"):
     """Loads CRM login credentials from JSON file."""
     with open(filepath, "r") as f:
         data = json.load(f)
@@ -21,8 +21,6 @@ def load_credentials(filepath="credentials.json"):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
@@ -35,12 +33,14 @@ if __name__ == '__main__':
     # df = pd.read_excel("car_input.xlsx")  # Assume columns: CarNo, ChassisNo
 
     try:
+        start_time = time.time()
         # Setup browser (Chrome here)
         driver = webdriver.Chrome()
 
         # Login if required
-        url,username, password ,input_file , output_file = load_credentials()
-        print(url,username, password)
+        url, username, password ,input_file , output_file = load_credentials()
+        # print(url,username, password)
+        print(url,input_file, output_file)
         driver.get(url)
         driver.find_element(By.ID, "s_swepi_1").send_keys(username)
         driver.find_element(By.ID, "s_swepi_2").send_keys(password)
@@ -88,9 +88,8 @@ if __name__ == '__main__':
             time.sleep(0.5)
             search_button.click()
             print("After search click")
-            time.sleep(15)
+            time.sleep(10)
             driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
-
             # 2. Wait for 'Go' button and click
             go_button = wait.until(EC.element_to_be_clickable((By.ID, "s_1_1_343_0_Ctrl")))
             go_button.click()
@@ -99,7 +98,7 @@ if __name__ == '__main__':
 
             print("Before Service History click")
 
-            time.sleep(10)
+            time.sleep(5)
             serv_hist_tab = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//a[@data-tabindex='tabScreen5' and contains(., 'Service History')]"))
@@ -123,7 +122,7 @@ if __name__ == '__main__':
             # Find all data rows with class jqgrow inside the tbody
             srv_hist_data_rows = table_body.find_elements(By.CSS_SELECTOR, "tr.jqgrow")
 
-            time.sleep(10)
+            time.sleep(5)
 
             # traverse through all service history rows
             srv_hist_rows_data = []
@@ -182,7 +181,7 @@ if __name__ == '__main__':
                 driver.execute_script("arguments[0].click();", contacts_tab)
 
             print("After contact click")
-            time.sleep(10)
+            time.sleep(5)
 
             # Wait for the grid table body to load and be present
             table_body = WebDriverWait(driver, 20).until(
@@ -218,11 +217,25 @@ if __name__ == '__main__':
             last_serv_dt_value = last_serv_dt_element.get_attribute("value")
             print(f"Last Service Date value: '{last_serv_dt_value}'")
 
-            next_serv_dt_element = driver.find_element(By.XPATH,
-                                                       '//input[contains(@class, "siebui-ctrl-date") and @aria-label="Next Service Date"]')
+            next_serv_dt_element = driver.find_element(By.XPATH, '//input[contains(@class, "siebui-ctrl-date") and @aria-label="Next Service Date"]')
             # Read the value attribute (this gives input’s content)
             next_serv_dt_value = next_serv_dt_element.get_attribute("value")
             print(f"Next Service Date value: '{next_serv_dt_value}'")
+
+            war_exp_dt_element = driver.find_element(By.XPATH, '//input[contains(@class, "siebui-ctrl-date") and @aria-label="Warranty Expiry Date"]')
+            # Read the value attribute (this gives input’s content)
+            war_exp_dt_value = war_exp_dt_element.get_attribute("value")
+            print(f"Warranty Expiry Date value: '{war_exp_dt_value}'")
+
+            next_serv_type_element = driver.find_element(By.XPATH, '//input[contains(@class, "siebui-ctrl-input") and @aria-label="Next Service Type"]')
+            # Read the value attribute (this gives input’s content)
+            next_serv_type_value = next_serv_type_element.get_attribute("value")
+            print(f"Next Service Type value: '{next_serv_type_value}'")
+
+            prod_line_element = driver.find_element(By.XPATH, '//input[contains(@class, "siebui-ctrl-input") and @aria-label="Product Line"]')
+            # Read the value attribute (this gives input’s content)
+            prod_line_value = prod_line_element.get_attribute("value")
+            print(f"Product Line value: '{prod_line_value}'")
 
             # traverse through all rows
             rows_data = []
@@ -233,7 +246,6 @@ if __name__ == '__main__':
                 # Detect if first cell is checkbox — check for input element of type checkbox
                 first_cell_html = cells[0].get_attribute('innerHTML').lower()
                 has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
-                offset = 2 if has_checkbox else 0
                 offset = 1
                 print(f"Row {row_index}:")
                 row_dict = {}
@@ -263,14 +275,17 @@ if __name__ == '__main__':
                 print("No row found where 'Primary' is 'Y'.")
 
             primary_dict = dict(primary_row)
-            primary_dict['Original Sale Date'] = org_sale_dt_value
             primary_dict['Chassis No'] = chassis_no_value
+            primary_dict['Original Sale Date'] = org_sale_dt_value
+            primary_dict['Warranty Expiry Date:'] = war_exp_dt_value
             primary_dict['Last Service Date'] = last_serv_dt_value
             primary_dict['Next Service Date'] = next_serv_dt_value
+            primary_dict['Next Service Type'] = next_serv_type_value
+            primary_dict['Product_Line'] = prod_line_value
 
             print("Adding primary_dict to contact_data_list")
             contact_data_list.append(primary_dict)
-            time.sleep(10)
+            time.sleep(5)
             # # Convert the single row dict to a DataFrame with one row
             # contact_df = pd.DataFrame([primary_row])
 
@@ -295,9 +310,12 @@ if __name__ == '__main__':
         print("wait is over. please log off now ")
         print("dataframe created . wait is over. please log off")
 
-        time.sleep(10)
+        time.sleep(5)
+        elapsed_seconds = time.time() - start_time
+        print(f"Total time elapsed: {elapsed_seconds:.2f} seconds")
+        driver.quit()
     except Exception as e:
         print("Error Ocurred . log off:", e)
-        time.sleep(20)
+        time.sleep(10)
         # Step 9: Close browser session
         driver.quit()
