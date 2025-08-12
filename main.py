@@ -2,6 +2,7 @@
 
 # Press ⌃R to execute it or replace it with your code.
 # Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+import json
 
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -9,6 +10,13 @@ from selenium.webdriver.support.wait import WebDriverWait
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+
+
+def load_credentials(filepath="credentials.json"):
+    """Loads CRM login credentials from JSON file."""
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    return data["url"],data["username"], data["password"],data["input_file"], data["output_file"]
 
 
 # Press the green button in the gutter to run the script.
@@ -31,19 +39,18 @@ if __name__ == '__main__':
         driver = webdriver.Chrome()
 
         # Login if required
-        driver.get("https://carsdms.inservices.tatamotors.com/siebel/app/workshop/enu?SWECmd=Start")
-        driver.find_element(By.ID, "s_swepi_1").send_keys("IR_3084271")
-        driver.find_element(By.ID, "s_swepi_2").send_keys("ITI@0225elite")
+        url,username, password ,input_file , output_file = load_credentials()
+        print(url,username, password)
+        driver.get(url)
+        driver.find_element(By.ID, "s_swepi_1").send_keys(username)
+        driver.find_element(By.ID, "s_swepi_2").send_keys(password)
         wait = WebDriverWait(driver, 10)
         login_button = wait.until(EC.element_to_be_clickable((By.ID, "s_swepi_22")))
         login_button.click()
-        # driver.find_element(By.ID, "s_swepi_22").click()
-
-        output = []
 
         print("Login Successful")
 
-        time.sleep(20)  # wait for page to load
+        time.sleep(5)  # wait for page to load
 
         # === STEP 2: Wait for Home Page ===
         wait = WebDriverWait(driver, 10)
@@ -55,7 +62,7 @@ if __name__ == '__main__':
         vehicle_history_tab.click()
 
         # Read Excel file
-        df = pd.read_excel("Sample_Data_Bank_June_2025.xlsx")  # Reads entire sheet by default
+        df = pd.read_excel(input_file)  # Reads entire sheet by default
 
         # Select only two columns (replace with your actual column names)
         df = df[['Chassis No', 'Registration No']]
@@ -68,45 +75,114 @@ if __name__ == '__main__':
         for index, row in df.iterrows():
             chasis_no = row["Chassis No"]
             print(chasis_no)
-            print(type(chasis_no))
-            # driver.find_element(By.NAME, "s_1_1_301_0").send_keys("WB24AW9959")
-            # driver.find_element(By.NAME, "s_1_1_298_0").send_keys("MAT403725ENC02141") # search by Chassis No.
             print("Before search click")
-            # driver.execute_script("window.scrollTo(0, 0);")
-            time.sleep(20)
-            # search_button = WebDriverWait(driver, 25).until(
-            #     EC.element_to_be_clickable((By.ID, "s_1_1_346_0_Ctrl"))
-            # )
-            # button.click()
+            time.sleep(5)
+            # Wait for the scrollable container to be present
+            scroll_container = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "div.siebui-applet-container"))
+            )
+            # Scroll to top
+            driver.execute_script("arguments[0].scrollTop = 0;", scroll_container)
             search_button = driver.find_element(By.ID, "s_1_1_346_0_Ctrl")  # Replace with your actual locator
-            # Scroll the element into view
-            driver.execute_script("arguments[0].scrollIntoView(true);", search_button)
             # Optionally add a small wait to ensure scrolling completed
             time.sleep(0.5)
             search_button.click()
             print("After search click")
-            time.sleep(30)
+            time.sleep(15)
             driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
 
             # 2. Wait for 'Go' button and click
             go_button = wait.until(EC.element_to_be_clickable((By.ID, "s_1_1_343_0_Ctrl")))
             go_button.click()
 
+            # SERVICE HISTORY
+
+            print("Before Service History click")
+
+            time.sleep(10)
+            serv_hist_tab = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//a[@data-tabindex='tabScreen5' and contains(., 'Service History')]"))
+            )
+            driver.execute_script("arguments[0].scrollIntoView(true);", serv_hist_tab)
+            time.sleep(5)
+            try:
+                serv_hist_tab.click()
+            except:
+                driver.execute_script("arguments[0].click();", serv_hist_tab)
+
+            time.sleep(5)
+
+            print("After Service History click")
+            time.sleep(5)
+
+            table_body = WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#s_2_l tbody"))
+            )
+
+            # Find all data rows with class jqgrow inside the tbody
+            srv_hist_data_rows = table_body.find_elements(By.CSS_SELECTOR, "tr.jqgrow")
+
+            time.sleep(10)
+
+            # traverse through all service history rows
+            srv_hist_rows_data = []
+            srv_hist_headers = ['SH #', 'Chassis No.', 'Registration No.', 'Account', 'SR #', 'Service Date/Time',
+                                'Serviced At Dealer',
+                                'Odometer Reading', 'Hours', 'SR Type', 'Summary', 'Survey Customer', 'Revisit',
+                                'Service Request',
+                                'Job Card Open Date', 'Customer Segment', 'Contact Full Name']
+
+            # Locate the table by ID (adjust selector if needed)
+            srv_hist_table = driver.find_element(By.ID, "s_2_l")
+
+            # Locate all data rows inside tbody with class jqgrow and role row, or your actual selector
+            srv_hist_data_rows = srv_hist_table.find_elements(By.CSS_SELECTOR, "tbody tr.jqgrow")
+            srv_hist_row_dict = {}  # Initialize dict for 1st row
+
+            if srv_hist_data_rows:
+                srv_hist_first_row = srv_hist_data_rows[0]
+
+                cells = srv_hist_first_row.find_elements(By.TAG_NAME, "td")
+                cell_texts = [cell.text.strip() for cell in cells]
+
+                # Detect if first cell is a checkbox or non-data cell
+                first_cell_html = cells[0].get_attribute('innerHTML').lower()
+                has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
+                offset = 2 if has_checkbox else 0
+                offset = 1
+
+                for i, header in enumerate(srv_hist_headers):
+                    cell_idx = i + offset
+                    if cell_idx < len(cell_texts):
+                        print(f"  {header}: {cell_texts[cell_idx]}")
+                        srv_hist_row_dict[header] = cell_texts[cell_idx]
+                    else:
+                        print(f"  {header}: <no data>")
+                        srv_hist_row_dict[header] = None
+
+                # srv_hist_row_dict now contains the data for the first row with headers as keys
+            else:
+                print("No data rows found in the table.")
+            print("Adding srv_hist_row_dict to srv_hist_data_list")
+            srv_hist_data_list.append(srv_hist_row_dict)
+
+
             print("Before contact click")
 
-            time.sleep(30)
+            time.sleep(5)
             contacts_tab = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[@data-tabindex='tabScreen0' and contains(., 'Contacts')]"))
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", contacts_tab)
-            time.sleep(10)
+            time.sleep(5)
             try:
                 contacts_tab.click()
             except:
                 driver.execute_script("arguments[0].click();", contacts_tab)
 
             print("After contact click")
-            time.sleep(20)
+            time.sleep(10)
 
             # Wait for the grid table body to load and be present
             table_body = WebDriverWait(driver, 20).until(
@@ -158,6 +234,7 @@ if __name__ == '__main__':
                 first_cell_html = cells[0].get_attribute('innerHTML').lower()
                 has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
                 offset = 2 if has_checkbox else 0
+                offset = 1
                 print(f"Row {row_index}:")
                 row_dict = {}
                 for i, header in enumerate(contact_headers):
@@ -191,86 +268,13 @@ if __name__ == '__main__':
             primary_dict['Last Service Date'] = last_serv_dt_value
             primary_dict['Next Service Date'] = next_serv_dt_value
 
+            print("Adding primary_dict to contact_data_list")
             contact_data_list.append(primary_dict)
-
+            time.sleep(10)
             # # Convert the single row dict to a DataFrame with one row
             # contact_df = pd.DataFrame([primary_row])
 
-            # SERVICE HISTORY
-
-            print("Before Service History click")
-
-            time.sleep(30)
-            serv_hist_tab = WebDriverWait(driver, 20).until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//a[@data-tabindex='tabScreen5' and contains(., 'Service History')]"))
-            )
-            driver.execute_script("arguments[0].scrollIntoView(true);", serv_hist_tab)
-            time.sleep(10)
-            try:
-                serv_hist_tab.click()
-            except:
-                driver.execute_script("arguments[0].click();", serv_hist_tab)
-
-            time.sleep(20)
-
-            print("After Service History click")
-            time.sleep(20)
-
-            table_body = WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#s_2_l tbody"))
-            )
-
-            # Find all data rows with class jqgrow inside the tbody
-            srv_hist_data_rows = table_body.find_elements(By.CSS_SELECTOR, "tr.jqgrow")
-
-            time.sleep(20)
-
-            # traverse through all service history rows
-            srv_hist_rows_data = []
-            srv_hist_headers = ['SH #', 'Chassis No.', 'Registration No.', 'Account', 'SR #', 'Service Date/Time',
-                                'Serviced At Dealer',
-                                'Odometer Reading', 'Hours', 'SR Type', 'Summary', 'Survey Customer', 'Revisit',
-                                'Service Request',
-                                'Job Card Open Date', 'Customer Segment', 'Contact Full Name']
-
-            # Locate the table by ID (adjust selector if needed)
-            srv_hist_table = driver.find_element(By.ID, "s_2_l")
-
-            # Locate all data rows inside tbody with class jqgrow and role row, or your actual selector
-            srv_hist_data_rows = srv_hist_table.find_elements(By.CSS_SELECTOR, "tbody tr.jqgrow")
-            srv_hist_row_dict = {}  # Initialize dict for 1st row
-
-            if srv_hist_data_rows:
-                srv_hist_first_row = srv_hist_data_rows[0]
-
-                cells = srv_hist_first_row.find_elements(By.TAG_NAME, "td")
-                cell_texts = [cell.text.strip() for cell in cells]
-
-                # Detect if first cell is a checkbox or non-data cell
-                first_cell_html = cells[0].get_attribute('innerHTML').lower()
-                has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
-                offset = 2 if has_checkbox else 0
-
-
-                for i, header in enumerate(srv_hist_headers):
-                    cell_idx = i + offset
-                    if cell_idx < len(cell_texts):
-                        print(f"  {header}: {cell_texts[cell_idx]}")
-                        srv_hist_row_dict[header] = cell_texts[cell_idx]
-                    else:
-                        print(f"  {header}: <no data>")
-                        srv_hist_row_dict[header] = None
-
-                # srv_hist_row_dict now contains the data for the first row with headers as keys
-            else:
-                print("No data rows found in the table.")
-            srv_hist_data_list = srv_hist_data_list.append(srv_hist_row_dict)
-
-
-        # print(srv_hist_rows_data)
-
-        time.sleep(20)
+        time.sleep(5)
 
         # Convert the single-row dictionary into a DataFrame
         contact_df = pd.DataFrame(contact_data_list)
@@ -284,21 +288,16 @@ if __name__ == '__main__':
 
         final_df.drop(columns=cols_to_drop, inplace=True)
         # Save to Excel file - specify your file name and path
-        excel_file_path = "final_crm_data_v2.0.xlsx"
-        final_df.to_excel(excel_file_path, index=False)
+        output_excel_file = output_file
+        final_df.to_excel(output_excel_file, index=False)
 
-        print(f"DataFrame saved to '{excel_file_path}'")
+        print(f"DataFrame saved to '{output_excel_file}'")
         print("wait is over. please log off now ")
         print("dataframe created . wait is over. please log off")
 
-        time.sleep(20)
+        time.sleep(10)
     except Exception as e:
         print("Error Ocurred . log off:", e)
         time.sleep(20)
         # Step 9: Close browser session
         driver.quit()
-
-        # driver.quit()
-
-        # Save to Excel
-        # pd.DataFrame(output).to_excel("car_service_output.xlsx", index=False)
