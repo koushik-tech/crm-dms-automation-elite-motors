@@ -1,0 +1,10 @@
+{
+    "url": "https://carsdms.inservices.tatamotors.com/siebel/app/workshop/enu?SWECmd=Start",
+    "username": "IR_3084271",
+    "password": "ITI@0225elite",
+    "input_file": "Data Bank June 02062025.xlsx",
+    "output_file": "final_crm_data_v2.0.xlsx",
+    "column_offset" : 2,
+    "delay_1" : 2,
+    "delay_2" : 3
+}

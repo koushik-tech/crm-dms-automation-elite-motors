@@ -16,7 +16,8 @@ def load_credentials(filepath="process_config.json"):
     """Loads CRM login credentials from JSON file."""
     with open(filepath, "r") as f:
         data = json.load(f)
-    return data["url"],data["username"], data["password"],data["input_file"], data["output_file"]
+    return (data["url"],data["username"], data["password"],data["input_file"],
+            data["output_file"] , data["column_offset"] , data["delay_1"] , data["delay_2"])
 
 
 # Press the green button in the gutter to run the script.
@@ -38,7 +39,7 @@ if __name__ == '__main__':
         driver = webdriver.Chrome()
 
         # Login if required
-        url, username, password ,input_file , output_file = load_credentials()
+        url, username, password ,input_file , output_file,column_offset, delay_1, delay_2= load_configs()
         # print(url,username, password)
         print(url,input_file, output_file)
         driver.get(url)
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
         print("Login Successful")
 
-        time.sleep(5)  # wait for page to load
+        time.sleep(3)  # wait for page to load
 
         # === STEP 2: Wait for Home Page ===
         wait = WebDriverWait(driver, 10)
@@ -76,7 +77,7 @@ if __name__ == '__main__':
             chasis_no = row["Chassis No"]
             print(chasis_no)
             print("Before search click")
-            time.sleep(5)
+            time.sleep(2)
             # Wait for the scrollable container to be present
             scroll_container = WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "div.siebui-applet-container"))
@@ -88,7 +89,7 @@ if __name__ == '__main__':
             time.sleep(0.5)
             search_button.click()
             print("After search click")
-            time.sleep(10)
+            time.sleep(2)
             driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
             # 2. Wait for 'Go' button and click
             go_button = wait.until(EC.element_to_be_clickable((By.ID, "s_1_1_343_0_Ctrl")))
@@ -98,22 +99,22 @@ if __name__ == '__main__':
 
             print("Before Service History click")
 
-            time.sleep(5)
+            time.sleep(2)
             serv_hist_tab = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//a[@data-tabindex='tabScreen5' and contains(., 'Service History')]"))
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", serv_hist_tab)
-            time.sleep(5)
+            time.sleep(2)
             try:
                 serv_hist_tab.click()
             except:
                 driver.execute_script("arguments[0].click();", serv_hist_tab)
 
-            time.sleep(5)
+            time.sleep(2)
 
             print("After Service History click")
-            time.sleep(5)
+            # time.sleep(5)
 
             table_body = WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "#s_2_l tbody"))
@@ -122,7 +123,7 @@ if __name__ == '__main__':
             # Find all data rows with class jqgrow inside the tbody
             srv_hist_data_rows = table_body.find_elements(By.CSS_SELECTOR, "tr.jqgrow")
 
-            time.sleep(5)
+            # time.sleep(5)
 
             # traverse through all service history rows
             srv_hist_rows_data = []
@@ -147,9 +148,9 @@ if __name__ == '__main__':
 
                 # Detect if first cell is a checkbox or non-data cell
                 first_cell_html = cells[0].get_attribute('innerHTML').lower()
-                has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
-                offset = 2 if has_checkbox else 0
-                offset = 1
+                # has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
+                # offset = 2 if has_checkbox else 0
+                offset = 2
 
                 for i, header in enumerate(srv_hist_headers):
                     cell_idx = i + offset
@@ -169,19 +170,19 @@ if __name__ == '__main__':
 
             print("Before contact click")
 
-            time.sleep(5)
+            # time.sleep(5)
             contacts_tab = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.XPATH, "//a[@data-tabindex='tabScreen0' and contains(., 'Contacts')]"))
             )
             driver.execute_script("arguments[0].scrollIntoView(true);", contacts_tab)
-            time.sleep(5)
+            # time.sleep(5)
             try:
                 contacts_tab.click()
             except:
                 driver.execute_script("arguments[0].click();", contacts_tab)
 
             print("After contact click")
-            time.sleep(5)
+            time.sleep(3)
 
             # Wait for the grid table body to load and be present
             table_body = WebDriverWait(driver, 20).until(
@@ -245,8 +246,8 @@ if __name__ == '__main__':
 
                 # Detect if first cell is checkbox — check for input element of type checkbox
                 first_cell_html = cells[0].get_attribute('innerHTML').lower()
-                has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
-                offset = 1
+                # has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
+                offset = 2
                 print(f"Row {row_index}:")
                 row_dict = {}
                 for i, header in enumerate(contact_headers):
@@ -285,11 +286,11 @@ if __name__ == '__main__':
 
             print("Adding primary_dict to contact_data_list")
             contact_data_list.append(primary_dict)
-            time.sleep(5)
+            # time.sleep(5)
             # # Convert the single row dict to a DataFrame with one row
             # contact_df = pd.DataFrame([primary_row])
 
-        time.sleep(5)
+        # time.sleep(5)
 
         # Convert the single-row dictionary into a DataFrame
         contact_df = pd.DataFrame(contact_data_list)
@@ -310,7 +311,7 @@ if __name__ == '__main__':
         print("wait is over. please log off now ")
         print("dataframe created . wait is over. please log off")
 
-        time.sleep(5)
+        # time.sleep(5)
         elapsed_seconds = time.time() - start_time
         print(f"Total time elapsed: {elapsed_seconds:.2f} seconds")
         driver.quit()
