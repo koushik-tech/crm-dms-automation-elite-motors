@@ -6,5 +6,16 @@
     "output_file": "final_crm_data_v2.0.xlsx",
     "column_offset" : 2,
     "delay_1" : 2,
-    "delay_2" : 3
+    "delay_2" : 3,
+    "contact_headers" : ["Customer Rel. No.", "M/M", "Last Name", "First Name", "Asset Relationship",
+                         "Driving License", "Expiry Date", "RC Book Check", "Company/Account", "Site", "Contact Address", "City",
+                         "State", "Phone (R)", "Phone(O)", "Cell Phone No.", "Email Address", "Final Validation", "Created By",
+                         "Created Date", "Customer Segment", "Primary", "Verification Status", "Verified Date", "Invoice Created Date"],
+    "srv_hist_headers" : ["SH #", "Chassis No.", "Registration No.", "Account", "SR #", "Service Date/Time",
+                          "Serviced At Dealer","Odometer Reading", "Hours", "SR Type", "Summary", "Survey Customer",
+                          "Revisit","Service Request","Job Card Open Date", "Customer Segment", "Contact Full Name"],
+    "drop_columns_name" : ["Customer Rel. No.","M/M","Asset Relationship","Driving License","RC Book Check","Company/Account",
+                           "Site","Final Validation","Created By","Created Date","Customer Segment","Primary","Verification Status",
+                           "Verified Date","Invoice Created Date","SH #","Chassis No.","Account","SR #","Hours","Survey Customer",
+                           "Revisit","Service Request","Job Card Open Date","Customer Segment"]
 }
