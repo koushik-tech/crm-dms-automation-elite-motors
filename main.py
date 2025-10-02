@@ -78,7 +78,8 @@ if __name__ == '__main__':
             df = pd.read_excel(input_file)  # Reads entire sheet by default
 
             # Select only two columns (replace with your actual column names)
-            df = df[['Chassis No', 'Registration No']]
+            # df = df[['Chassis No', 'Registration No']]
+            df = df[['Registration_No']]
 
             contact_data_list = []
             srv_hist_data_list = []
@@ -86,8 +87,10 @@ if __name__ == '__main__':
             serv_hist_df = pd.DataFrame()
             # Loop over the DataFrame and print one column's value
             for index, row in df.iterrows():
-                chasis_no = row["Chassis No"]
-                print(chasis_no)
+                # chasis_no = row["Chassis No"]
+                # print(chasis_no)
+                registration_no = row["Registration_No"]
+                print(registration_no)
                 print("Before search click")
                 time.sleep(delay_1)
                 # Wait for the scrollable container to be present
@@ -96,13 +99,14 @@ if __name__ == '__main__':
                 )
                 # Scroll to top
                 driver.execute_script("arguments[0].scrollTop = 0;", scroll_container)
-                search_button = driver.find_element(By.ID, "s_1_1_346_0_Ctrl")  # Replace with your actual locator
+                search_button = driver.find_element(By.ID, "s_1_1_346_0_Ctrl")
                 # Optionally add a small wait to ensure scrolling completed
                 time.sleep(0.5)
                 search_button.click()
                 print("After search click")
                 time.sleep(delay_1)
-                driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
+                # driver.find_element(By.NAME, "s_1_1_298_0").send_keys(chasis_no) # search by Chassis No.
+                driver.find_element(By.NAME, "s_1_1_301_0").send_keys(registration_no) # search by Registration No.
                 # 2. Wait for 'Go' button and click
                 go_button = wait.until(EC.element_to_be_clickable((By.ID, "s_1_1_343_0_Ctrl")))
                 go_button.click()
@@ -157,7 +161,7 @@ if __name__ == '__main__':
                     cell_texts = [cell.text.strip() for cell in cells]
 
                     # Detect if first cell is a checkbox or non-data cell
-                    first_cell_html = cells[0].get_attribute('innerHTML').lower()
+                    # first_cell_html = cells[0].get_attribute('innerHTML').lower()
                     # has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
                     # offset = 2 if has_checkbox else 0
                     offset = 2
@@ -251,11 +255,12 @@ if __name__ == '__main__':
                 # traverse through all rows
                 rows_data = []
                 for row_index, row in enumerate(data_rows, start=1):
+                    time.sleep(delay_1)
                     cells = row.find_elements(By.TAG_NAME, "td")
                     cell_texts = [cell.text.strip() for cell in cells]
 
                     # Detect if first cell is checkbox — check for input element of type checkbox
-                    first_cell_html = cells[0].get_attribute('innerHTML').lower()
+                    # first_cell_html = cells[0].get_attribute('innerHTML').lower()
                     # has_checkbox = 'type="checkbox"' in first_cell_html or 'checkbox' in first_cell_html
                     offset = 2
                     print(f"Row {row_index}:")
@@ -285,14 +290,14 @@ if __name__ == '__main__':
                 else:
                     print("No row found where 'Primary' is 'Y'.")
 
-                primary_dict = dict(primary_row)
-                primary_dict['Chassis No'] = chassis_no_value
-                primary_dict['Original Sale Date'] = org_sale_dt_value
-                primary_dict['Warranty Expiry Date:'] = war_exp_dt_value
-                primary_dict['Last Service Date'] = last_serv_dt_value
-                primary_dict['Next Service Date'] = next_serv_dt_value
-                primary_dict['Next Service Type'] = next_serv_type_value
-                primary_dict['Product_Line'] = prod_line_value
+                primary_dict = dict(primary_row) if primary_row is not None else {}
+                primary_dict['Chassis No'] = chassis_no_value or 'Not Found'
+                primary_dict['Original Sale Date'] = org_sale_dt_value  or 'Not Found'
+                primary_dict['Warranty Expiry Date:'] = war_exp_dt_value  or 'Not Found'
+                primary_dict['Last Service Date'] = last_serv_dt_value  or 'Not Found'
+                primary_dict['Next Service Date'] = next_serv_dt_value  or 'Not Found'
+                primary_dict['Next Service Type'] = next_serv_type_value  or 'Not Found'
+                primary_dict['Product_Line'] = prod_line_value  or 'Not Found'
 
                 print("Adding primary_dict to contact_data_list")
                 contact_data_list.append(primary_dict)
@@ -318,16 +323,54 @@ if __name__ == '__main__':
             final_df.to_excel(output_excel_file, index=False)
 
             print(f"DataFrame saved to '{output_excel_file}'")
-            print("wait is over. please log off now ")
             print("dataframe created . wait is over. please log off")
 
-            click_logout_button(driver)
-            # time.sleep(5)
             elapsed_seconds = time.time() - start_time
             print(f"Total time elapsed: {elapsed_seconds:.2f} seconds")
+            wait = WebDriverWait(driver, 20)
+            # Locate the button using CSS selector by class and aria-label attribute
+            button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "li.siebui-toolbar-enable[aria-label='Settings']"))
+            )
+            # Scroll it into view then click
+            driver.execute_script("arguments[0].scrollIntoView(true);", button)
+            button.click()
+            print("Settings toolbar button clicked successfully.")
+            time.sleep(delay_2)
+            wait = WebDriverWait(driver, 20)
+            # Locate the button by its class and the 'title' attribute 'Logout'
+            logout_button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.siebui-btn-logout[title='Logout']"))
+            )
+            # Scroll into view just in case
+            driver.execute_script("arguments[0].scrollIntoView(true);", logout_button)
+            logout_button.click()
+            print("Logout button clicked successfully.")
+            time.sleep(delay_1)
             driver.quit()
+
+
         except Exception as e:
             print("Error Ocurred . log off:", e)
             time.sleep(delay_2)
+            wait = WebDriverWait(driver, 20)
+            # Locate the button using CSS selector by class and aria-label attribute
+            button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "li.siebui-toolbar-enable[aria-label='Settings']"))
+            )
+            # Scroll it into view then click
+            driver.execute_script("arguments[0].scrollIntoView(true);", button)
+            button.click()
+            print("Settings toolbar button clicked successfully.")
+            time.sleep(delay_2)
+            wait = WebDriverWait(driver, 20)
+            # Locate the button by its class and the 'title' attribute 'Logout'
+            logout_button = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.siebui-btn-logout[title='Logout']"))
+            )
+            # Scroll into view just in case
+            driver.execute_script("arguments[0].scrollIntoView(true);", logout_button)
+            logout_button.click()
+            print("Logout button clicked successfully.")
             # Step 9: Close browser session
             driver.quit()
