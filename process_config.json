@@ -3,10 +3,12 @@
     "username": "IR_3084271",
     "password": "ITI@0225elite",
     "input_file": "Databank_Aug_2025_Full.xlsx",
-    "output_file": "final_crm_data_v3.0.xlsx",
+    "output_file": "output\\final_crm_data",
     "column_offset" : 2,
-    "delay_1" : 2,
-    "delay_2" : 2,
+    "delay_1" : 3,
+    "delay_2" : 4,
+    "input_file_headers" : ["Vehicle Reged Number","Contact Number","Model","First Name","Last name","Account Name","Percentage"],
+    "input_columns_for_report" : ["Vehicle Reged Number","Contact Number"],
     "contact_headers" : ["Customer Rel. No.", "M/M", "Last Name", "First Name", "Asset Relationship",
                          "Driving License", "Expiry Date", "RC Book Check", "Company/Account", "Site", "Contact Address", "City",
                          "State", "Phone (R)", "Phone(O)", "Cell Phone No.", "Email Address", "Final Validation", "Created By",
@@ -17,5 +19,10 @@
     "drop_columns_name" : ["Customer Rel. No.","M/M","Asset Relationship","Driving License","RC Book Check","Company/Account",
                            "Site","Final Validation","Created By","Created Date","Customer Segment","Primary","Verification Status",
                            "Verified Date","Invoice Created Date","SH #","Chassis No.","Account","SR #","Hours","Survey Customer",
-                           "Revisit","Service Request","Job Card Open Date","Customer Segment"]
+                           "Revisit","Service Request","Job Card Open Date","Customer Segment"],
+    "report_schema" : ["Vehicle Reged Number","Contact Number","First Name","Last Name","Contact Full Name",
+                            "Contact Address","City","State","Phone (R)","Phone(O)","Cell Phone No.","Email Address",
+                            "Chassis No","Original Sale Date","Warranty Expiry Date:","Last Service Date",
+                            "Next Service Date","Next Service Type","Product_Line","Registration No.","Service Date/Time",
+                            "Serviced At Dealer","Odometer Reading","SR Type","Summary","Expiry Date"]
 }

@@ -13,6 +13,8 @@ from selenium.common.exceptions import StaleElementReferenceException, NoSuchEle
 import pandas as pd
 import time
 from wakepy import keep
+from datetime import datetime
+
 
 def load_configs(filepath="process_config.json"):
     """Loads CRM login credentials from JSON file."""
@@ -20,7 +22,8 @@ def load_configs(filepath="process_config.json"):
         data = json.load(f)
     return (data["url"],data["username"], data["password"],data["input_file"],
             data["output_file"] , data["column_offset"] , data["delay_1"] , data["delay_2"] ,
-            data["contact_headers"],data["srv_hist_headers"],data["drop_columns_name"])
+            data["input_file_headers"], data["input_columns_for_report"], data["contact_headers"],
+            data["srv_hist_headers"],data["drop_columns_name"],data["report_schema"])
 
 def click_logout_button(driver):
     """
@@ -51,7 +54,7 @@ if __name__ == '__main__':
 
             # Login if required
             url, username, password ,input_file , output_file,column_offset, delay_1, delay_2,\
-            contact_headers,srv_hist_headers, cols_to_drop= load_configs()
+            input_file_headers,input_columns_for_report,contact_headers,srv_hist_headers, cols_to_drop , report_schema= load_configs()
             # print(url,username, password)
             print(url,input_file, output_file)
             driver.get(url)
@@ -75,23 +78,27 @@ if __name__ == '__main__':
             vehicle_history_tab.click()
 
             # Read Excel file
-            df = pd.read_excel(input_file)  # Reads entire sheet by default
+            input_data_df = pd.read_excel(input_file)  # Reads entire sheet by default
 
             # Select only two columns (replace with your actual column names)
-            # df = df[['Chassis No', 'Registration No']]
-            df = df[['Registration_No']]
+            # input_data_df = input_data_df[['Chassis No', 'Registration No']]
+            input_data_df = input_data_df[input_columns_for_report]
 
+            file_index = 1
+            max_rec_per_file=100
             contact_data_list = []
             srv_hist_data_list = []
             contact_df = pd.DataFrame()
             serv_hist_df = pd.DataFrame()
             # Loop over the DataFrame and print one column's value
-            for index, row in df.iterrows():
+            for index, row in input_data_df.iterrows():
                 # chasis_no = row["Chassis No"]
                 # print(chasis_no)
-                registration_no = row["Registration_No"]
+                registration_no = row["Vehicle Reged Number"]
+                contact_no = row["Contact Number"]
                 print(registration_no)
                 print("Before search click")
+                print(f"index :{index}")
                 time.sleep(delay_1)
                 # Wait for the scrollable container to be present
                 scroll_container = WebDriverWait(driver, 10).until(
@@ -279,7 +286,7 @@ if __name__ == '__main__':
                 # Now find the single row where 'Primary' == 'Y'
                 primary_row = None
                 for row in rows_data:
-                    if row.get('Primary', '').upper() == 'Y':
+                    if (row.get('Primary') or '').upper() == 'Y':
                         primary_row = row
                         break  # remove break if multiple matches needed
 
@@ -291,6 +298,8 @@ if __name__ == '__main__':
                     print("No row found where 'Primary' is 'Y'.")
 
                 primary_dict = dict(primary_row) if primary_row is not None else {}
+                primary_dict['Vehicle Reged Number'] = registration_no or 'Not Found'
+                primary_dict['Contact Number'] = contact_no or 'Not Found'
                 primary_dict['Chassis No'] = chassis_no_value or 'Not Found'
                 primary_dict['Original Sale Date'] = org_sale_dt_value  or 'Not Found'
                 primary_dict['Warranty Expiry Date:'] = war_exp_dt_value  or 'Not Found'
@@ -305,21 +314,36 @@ if __name__ == '__main__':
                 # # Convert the single row dict to a DataFrame with one row
                 # contact_df = pd.DataFrame([primary_row])
 
-            # time.sleep(5)
+                if (index + 1) % max_rec_per_file ==0:
+                    # Convert the single-row dictionary into a DataFrame
+                    contact_df = pd.DataFrame(contact_data_list)
+                    serv_hist_df = pd.DataFrame(srv_hist_data_list)
+                    final_df = pd.concat([contact_df, serv_hist_df], axis=1)
+
+                    final_df.drop(columns=cols_to_drop, inplace=True)
+                    final_df = final_df.reindex(columns=report_schema)
+                    # Save to Excel file - specify your file name and path
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    output_excel_file = f"{output_file}_{file_index}_{timestamp}.xlsx"
+                    final_df.to_excel(output_excel_file, index=False)
+
+                    print(f"DataFrame saved to '{output_excel_file}'")
+                    contact_data_list = []
+                    srv_hist_data_list = []
+                    file_index = file_index +1
+                    # time.sleep(5)
 
             # Convert the single-row dictionary into a DataFrame
             contact_df = pd.DataFrame(contact_data_list)
             serv_hist_df = pd.DataFrame(srv_hist_data_list)
-            final_df= pd.concat([contact_df, serv_hist_df], axis=1)
-            # Columns you want to drop
-            # cols_to_drop = ['Customer Rel. No.','M/M','Asset Relationship','Driving License','RC Book Check','Company/Account',
-            #                 'Site','Final Validation','Created By','Created Date','Customer Segment','Primary','Verification Status',
-            #                 'Verified Date','Invoice Created Date','SH #','Chassis No.','Account','SR #','Hours','Survey Customer',
-            #                 'Revisit','Service Request','Job Card Open Date','Customer Segment']
+            final_df= pd.concat([ contact_df, serv_hist_df], axis=1)
 
-            final_df.drop(columns=cols_to_drop, inplace=True)
+            # final_df=final_df.reindex(columns=report_schema)
+            final_df=final_df[report_schema]
+            # final_df.drop(columns=cols_to_drop, inplace=True)
             # Save to Excel file - specify your file name and path
-            output_excel_file = output_file
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_excel_file = f"{output_file}_{file_index}_{timestamp}.xlsx"
             final_df.to_excel(output_excel_file, index=False)
 
             print(f"DataFrame saved to '{output_excel_file}'")
@@ -351,7 +375,7 @@ if __name__ == '__main__':
 
 
         except Exception as e:
-            print("Error Ocurred . log off:", e)
+            print("Error Occurred . log off:", e)
             time.sleep(delay_2)
             wait = WebDriverWait(driver, 20)
             # Locate the button using CSS selector by class and aria-label attribute
